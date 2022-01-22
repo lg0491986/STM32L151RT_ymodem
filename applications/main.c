@@ -90,7 +90,7 @@ int main(void)
 
 int app_vector(void)
 {
-#define RT_APP_PART_ADDR 0x08040000
+#define RT_APP_PART_ADDR 0x08030000
 #define NVIC_VTOR_MASK  0x3FFFFF80
     SCB->VTOR = RT_APP_PART_ADDR & NVIC_VTOR_MASK;
     return 0;
