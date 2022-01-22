@@ -73,7 +73,7 @@ int flash_test()
 typedef void(*app_load_func)(void);
 void load_app(uint8_t argc, char **argv)
 {
-#define APP_ADDRESS 0x08040000
+#define APP_ADDRESS 0x08030000UL
   app_load_func app_load;
   uint32_t app_addr = APP_ADDRESS;
 
