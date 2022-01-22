@@ -79,22 +79,21 @@ int main(void)
     rt_pin_write(SIG_LED, PIN_HIGH);
      */
     LOG_D("Hello RT-Thread! %d", count);
-//    flash_test();
     while (count++)
     {
-//        LOG_D("Hello RT-Thread! %d", count);
+        LOG_D("Hello RT-Thread! %d", count);
         rt_thread_mdelay(1000);
     }
 
     return RT_EOK;
 }
 
-/*int app_vector(void)
+int app_vector(void)
 {
-#define RT_APP_PART_ADDR 0x8004000
+#define RT_APP_PART_ADDR 0x08040000
 #define NVIC_VTOR_MASK  0x3FFFFF80
     SCB->VTOR = RT_APP_PART_ADDR & NVIC_VTOR_MASK;
     return 0;
 }
 
-INIT_BOARD_EXPORT(app_vector);*/
+INIT_BOARD_EXPORT(app_vector);
