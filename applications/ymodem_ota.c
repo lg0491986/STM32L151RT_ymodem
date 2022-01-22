@@ -12,7 +12,9 @@
 #include <rtthread.h>
 #include <stdio.h>
 #include <stdbool.h>
+#if defined(RT_USING_FINSH)
 #include <finsh.h>
+#endif
 #include <ymodem.h>
 #include <drv_flash.h>
 

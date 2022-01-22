@@ -70,31 +70,38 @@ int flash_test()
     return ret;
 }
 
+typedef void(*app_load_func)(void);
+void load_app(uint8_t argc, char **argv)
+{
+#define APP_ADDRESS 0x08040000
+  app_load_func app_load;
+  uint32_t app_addr = APP_ADDRESS;
+
+  rt_kprintf("[%s:%d]\n", __func__, __LINE__);
+  if(((*(__IO uint32_t*)(app_addr+4))&0xFF000000)==0x08000000){
+      if(((*(__IO uint32_t*)app_addr)&0x2FFE0000)==0x20000000)
+      {
+          app_load = (app_load_func)*(__IO uint32_t*)(app_addr + 4);
+          __set_MSP(*(__IO uint32_t*)(app_addr));
+          app_load();
+          rt_kprintf("[%s:%d]\n", __func__, __LINE__);
+      }
+  }
+}
+MSH_CMD_EXPORT_ALIAS(load_app, loadapp, load app);
+
 int main(void)
 {
     uint32_t count = 1;
 
-    /*
-    rt_pin_mode(SIG_LED, PIN_MODE_OUTPUT);
-    rt_pin_write(SIG_LED, PIN_HIGH);
-     */
     LOG_D("Hello RT-Thread! %d", count);
-//    flash_test();
+//    load_app(0, RT_NULL);
     while (count++)
     {
-//        LOG_D("Hello RT-Thread! %d", count);
+        LOG_D("Hello RT-Thread! %d", count);
         rt_thread_mdelay(1000);
     }
 
     return RT_EOK;
 }
 
-/*int app_vector(void)
-{
-#define RT_APP_PART_ADDR 0x8004000
-#define NVIC_VTOR_MASK  0x3FFFFF80
-    SCB->VTOR = RT_APP_PART_ADDR & NVIC_VTOR_MASK;
-    return 0;
-}
-
-INIT_BOARD_EXPORT(app_vector);*/

@@ -15,18 +15,12 @@
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
 #define IDLE_THREAD_STACK_SIZE 256
-#define RT_USING_TIMER_SOFT
-#define RT_TIMER_THREAD_PRIO 4
-#define RT_TIMER_THREAD_STACK_SIZE 512
-#define RT_DEBUG
-#define RT_DEBUG_COLOR
 
 /* Inter-Thread communication */
 
 #define RT_USING_SEMAPHORE
 #define RT_USING_MUTEX
 #define RT_USING_EVENT
-#define RT_USING_MAILBOX
 #define RT_USING_MESSAGEQUEUE
 /* end of Inter-Thread communication */
 
