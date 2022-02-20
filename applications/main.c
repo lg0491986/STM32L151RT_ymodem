@@ -14,6 +14,7 @@
 #include <rtdevice.h>
 #include <board.h>
 #include "drv_flash.h"
+#include "wdt.h"
 
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
@@ -207,6 +208,7 @@ int main(void)
 
     LOG_D("Hello RT-Thread! %d", count);
 
+    init_watchdog();
     /* 同步时间 */
     sync_time();
     //    load_app(0, RT_NULL);
