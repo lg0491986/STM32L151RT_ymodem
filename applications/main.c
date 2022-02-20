@@ -8,6 +8,8 @@
  * 2021-10-28     RT-Thread    first version
  */
 
+#include <time.h>
+#include <string.h>
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
@@ -90,16 +92,131 @@ void load_app(uint8_t argc, char **argv)
 }
 MSH_CMD_EXPORT_ALIAS(load_app, loadapp, load app);
 
+extern void rtc_wkup_enable(uint32_t seconds);
+extern int rtc_wkup_flag_get(void);
+extern void system_clock_config(int target_freq_Mhz);
+
+static inline int get_start_up_source(void)
+{
+    __HAL_RCC_CLEAR_RESET_FLAGS(); /* 清除RCC各个复位标志 */
+
+    /*RTC唤醒*/
+    if(rtc_wkup_flag_get() == 1)
+    {
+        rt_kprintf("RTC wake up!\n");
+    }
+
+    rt_kprintf("[%s:%d]\n", __func__, __LINE__);
+    return 0;
+}
+INIT_ENV_EXPORT(get_start_up_source);
+
+void debug_uart_irq_cb(void *args)
+{
+    rt_pin_irq_enable(GET_PIN(B, 10), PIN_IRQ_ENABLE);
+}
+
+
+void stop_mode(uint8_t argc, char **argv)
+{
+    __HAL_RCC_CLEAR_RESET_FLAGS();  /*清除RCC各个复位标志*/
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+
+     /*清除所有相关唤醒标志位*/
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+
+/*    if(READ_BIT(FLASH->OPTR, FLASH_OPTR_IWDG_STOP) != 0)
+    {
+        LOG_I("watch dog with stop mode setting\r\n");
+        if(HAL_FLASH_Unlock() == HAL_OK)
+        {
+            if(HAL_FLASH_OB_Unlock() == HAL_OK)
+            {
+                CLEAR_BIT(FLASH->OPTR, FLASH_OPTR_IWDG_STOP);
+                SET_BIT(FLASH->CR, FLASH_CR_OPTSTRT);
+                FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE);
+                CLEAR_BIT(FLASH->CR, FLASH_CR_OPTSTRT);
+                HAL_FLASH_OB_Launch();
+            }
+        }
+        HAL_FLASH_OB_Lock();
+        HAL_FLASH_Lock();
+    }*/
+
+    __HAL_GPIO_EXTI_CLEAR_IT(0xfff);
+    rtc_wkup_enable(8); /* 调整RTC唤醒周期20s */
+
+    rt_kprintf("enter low power mode!\n");
+//    rt_pin_mode(GET_PIN(B, 10), PIN_MODE_INPUT);
+//    rt_pin_mode(GET_PIN(B, 10), PIN_MODE_INPUT);
+//    rt_pin_attach_irq(GET_PIN(B, 10), PIN_IRQ_MODE_RISING_FALLING, debug_uart_irq_cb, RT_NULL);
+//    rt_pin_irq_enable(GET_PIN(B, 10), PIN_IRQ_ENABLE);
+
+    HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+
+    /* restore from stop mode */
+    system_clock_config(BSP_CLOCK_SYSTEM_FREQ_MHZ);
+
+    rt_kprintf("wakeup from low power mode!\n");
+}
+MSH_CMD_EXPORT_ALIAS(stop_mode, lowpower, enter lowpower);
+
+
+void standby_mode(uint8_t argc, char **argv)
+{
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+    //HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
+//    HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
+//    HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN2);
+    /* 清除所有相关唤醒标志位 */
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+
+    LOG_I("LOW_MODE\n");
+    rtc_wkup_enable(8); /*调整RTC唤醒周期*/
+
+    LOG_I("Will enter standby\r\n");
+    HAL_PWR_EnterSTANDBYMode();
+}
+MSH_CMD_EXPORT_ALIAS(standby_mode, standby, enter standby);
+
+/* 同步时间 */
+int sync_time()
+{
+    rt_err_t ret = RT_EOK;
+    ret = set_date(2018, 12, 3);
+    if (ret != RT_EOK)
+    {
+        rt_kprintf("set RTC date failed\n");
+        return ret;
+    }
+    /* 设置时间 */
+    ret = set_time(11, 15, 50);
+    if (ret != RT_EOK)
+    {
+        rt_kprintf("set RTC time failed\n");
+        return ret;
+    }
+
+    return ret;
+}
+
 int main(void)
 {
     uint32_t count = 1;
+    time_t now;
 
     LOG_D("Hello RT-Thread! %d", count);
-//    load_app(0, RT_NULL);
+
+    /* 同步时间 */
+    sync_time();
+    //    load_app(0, RT_NULL);
     while (count++)
     {
         LOG_D("Hello RT-Thread! %d", count);
         rt_thread_mdelay(1000);
+        /* 获取时间 */
+        now = time(RT_NULL);
+        rt_kprintf("%s\n", ctime(&now));
     }
 
     return RT_EOK;

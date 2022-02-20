@@ -13,7 +13,7 @@
 #include<rtdevice.h>
 
 #ifdef BSP_USING_ONCHIP_RTC
-
+#define BSP_RTC_USING_LSI
 
 #ifndef HAL_RTCEx_BKUPRead
 #define HAL_RTCEx_BKUPRead(x1, x2) (~BKUP_REG_DATA)
@@ -34,6 +34,41 @@
 static struct rt_device rtc;
 
 static RTC_HandleTypeDef RTC_Handler;
+
+
+void rtc_wkup_enable(uint32_t seconds)
+{
+    uint32_t wakeup_clock,time;
+    HAL_RTCEx_DeactivateWakeUpTimer(&RTC_Handler);
+    if(seconds == 0 || seconds>131071)
+        return;
+    if(0<seconds && seconds<=65535){
+        time = seconds;
+        wakeup_clock = RTC_WAKEUPCLOCK_CK_SPRE_16BITS;
+    }
+    else if(65535<seconds && seconds<=131071){
+        time = seconds;
+        wakeup_clock = RTC_WAKEUPCLOCK_CK_SPRE_17BITS;
+    }
+    HAL_RTCEx_SetWakeUpTimer_IT(&RTC_Handler, time, wakeup_clock);
+}
+
+/*获取RTC唤醒标识 清除标识 失能RTC唤醒功能*/
+int rtc_wkup_flag_get(void)
+{
+    if(__HAL_RTC_WAKEUPTIMER_GET_FLAG(&RTC_Handler, RTC_FLAG_WUTF) != RESET)
+    {
+        __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&RTC_Handler, RTC_FLAG_WUTF);
+        HAL_RTCEx_DeactivateWakeUpTimer(&RTC_Handler);
+        return 1;
+    }
+    else
+    {
+        __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&RTC_Handler, RTC_FLAG_WUTF);
+        HAL_RTCEx_DeactivateWakeUpTimer(&RTC_Handler);
+        return 0;
+    }
+}
 
 static time_t get_rtc_timestamp(void)
 {
@@ -149,7 +184,7 @@ static rt_err_t rt_rtc_config(struct rt_device *dev)
         RTC_Handler.Init.OutPut = RTC_OUTPUT_DISABLE;
         RTC_Handler.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
         RTC_Handler.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-#elif defined(SOC_SERIES_STM32F2) || defined(SOC_SERIES_STM32F4) || defined(SOC_SERIES_STM32F7) || defined(SOC_SERIES_STM32L4) || defined(SOC_SERIES_STM32H7)
+#elif defined(SOC_SERIES_STM32L1) || defined(SOC_SERIES_STM32F2) || defined(SOC_SERIES_STM32F4) || defined(SOC_SERIES_STM32F7) || defined(SOC_SERIES_STM32L4) || defined(SOC_SERIES_STM32H7)
 
         /* set the frequency division */
 #ifdef BSP_RTC_USING_LSI
