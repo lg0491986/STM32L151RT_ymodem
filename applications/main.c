@@ -112,11 +112,75 @@ static inline int get_start_up_source(void)
 }
 INIT_ENV_EXPORT(get_start_up_source);
 
-void debug_uart_irq_cb(void *args)
+static void debug_uart_irq_cb(void *args)
 {
     rt_pin_irq_enable(GET_PIN(B, 10), PIN_IRQ_ENABLE);
 }
 
+static int enable_ble_interupt()
+{
+
+    rt_pin_mode(GET_PIN(B, 10), PIN_MODE_INPUT);
+    rt_pin_mode(GET_PIN(B, 10), PIN_MODE_INPUT);
+    rt_pin_attach_irq(GET_PIN(B, 10), PIN_IRQ_MODE_RISING_FALLING, debug_uart_irq_cb, RT_NULL);
+    rt_pin_irq_enable(GET_PIN(B, 10), PIN_IRQ_ENABLE);
+}
+
+static void set_pins_analog(void)
+{
+#define GPIO_A_SLEEP    GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12
+#define GPIO_B_SLEEP    GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8
+#define GPIO_C_SLEEP    GPIO_PIN_14|GPIO_PIN_15
+#define GPIO_D_SLEEP    GPIO_PIN_14|GPIO_PIN_15
+#define GPIO_E_SLEEP    GPIO_PIN_14|GPIO_PIN_15
+#define GPIO_H_SLEEP    GPIO_PIN_0|GPIO_PIN_1
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    GPIO_InitStruct.Pin = GPIO_A_SLEEP;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_B_SLEEP;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_C_SLEEP;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_C_SLEEP;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_C_SLEEP;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_H_SLEEP;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+    __HAL_RCC_GPIOC_CLK_DISABLE();
+    __HAL_RCC_GPIOH_CLK_DISABLE();
+}
+
+static int close_peripheral()
+{
+    /* todo */
+    return 0;
+}
 
 void stop_mode(uint8_t argc, char **argv)
 {
@@ -144,14 +208,17 @@ void stop_mode(uint8_t argc, char **argv)
         HAL_FLASH_Lock();
     }*/
 
+    /* 关闭外设及其电源 */
+    close_peripheral();
+
     __HAL_GPIO_EXTI_CLEAR_IT(0xfff);
     rtc_wkup_enable(8); /* 调整RTC唤醒周期20s */
 
     rt_kprintf("enter low power mode!\n");
-//    rt_pin_mode(GET_PIN(B, 10), PIN_MODE_INPUT);
-//    rt_pin_mode(GET_PIN(B, 10), PIN_MODE_INPUT);
-//    rt_pin_attach_irq(GET_PIN(B, 10), PIN_IRQ_MODE_RISING_FALLING, debug_uart_irq_cb, RT_NULL);
-//    rt_pin_irq_enable(GET_PIN(B, 10), PIN_IRQ_ENABLE);
+    set_pins_analog();
+
+    /* 开启BLE唤醒中断 */
+    enable_ble_interupt();
 
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 
@@ -159,6 +226,9 @@ void stop_mode(uint8_t argc, char **argv)
     system_clock_config(BSP_CLOCK_SYSTEM_FREQ_MHZ);
 
     rt_kprintf("wakeup from low power mode!\n");
+
+    /* 复位 */
+    HAL_NVIC_SystemReset();
 }
 MSH_CMD_EXPORT_ALIAS(stop_mode, lowpower, enter lowpower);
 
