@@ -13,7 +13,7 @@
 #include<rtdevice.h>
 
 #ifdef BSP_USING_ONCHIP_RTC
-#define BSP_RTC_USING_LSI
+//#define BSP_RTC_USING_LSI
 
 #ifndef HAL_RTCEx_BKUPRead
 #define HAL_RTCEx_BKUPRead(x1, x2) (~BKUP_REG_DATA)
@@ -246,7 +246,7 @@ static rt_err_t rt_hw_rtc_register(rt_device_t device, const char *name, rt_uint
 {
     RT_ASSERT(device != RT_NULL);
 
-    rt_rtc_init();
+//    rt_rtc_init();
     if (rt_rtc_config(device) != RT_EOK)
     {
         return -RT_ERROR;

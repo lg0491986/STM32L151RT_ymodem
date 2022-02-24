@@ -17,6 +17,7 @@
 #define DBG_TAG "board"
 #define DBG_LVL DBG_INFO
 #include <rtdbg.h>
+#define RCC_USING_HSE
 
 void system_clock_config(int target_freq_Mhz)
 {
@@ -28,6 +29,7 @@ void system_clock_config(int target_freq_Mhz)
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
     /** Initializes the CPU, AHB and APB busses clocks
     */
+#ifndef RCC_USING_HSE
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -35,6 +37,17 @@ void system_clock_config(int target_freq_Mhz)
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL3;
     RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV3;
+#else
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
+                                |RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL8;
+    RCC_OscInitStruct.PLL.PLLDIV = RCC_PLL_DIV2;
+#endif
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
       Error_Handler();

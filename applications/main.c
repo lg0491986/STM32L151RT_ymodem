@@ -215,7 +215,7 @@ void stop_mode(uint8_t argc, char **argv)
     rtc_wkup_enable(8); /* 调整RTC唤醒周期20s */
 
     rt_kprintf("enter low power mode!\n");
-    set_pins_analog();
+//    set_pins_analog();
 
     /* 开启BLE唤醒中断 */
     enable_ble_interupt();
@@ -228,7 +228,7 @@ void stop_mode(uint8_t argc, char **argv)
     rt_kprintf("wakeup from low power mode!\n");
 
     /* 复位 */
-    HAL_NVIC_SystemReset();
+//    HAL_NVIC_SystemReset();
 }
 MSH_CMD_EXPORT_ALIAS(stop_mode, lowpower, enter lowpower);
 
@@ -280,7 +280,7 @@ int main(void)
 
     init_watchdog();
     /* 同步时间 */
-    sync_time();
+//    sync_time();
     //    load_app(0, RT_NULL);
     while (count++)
     {
