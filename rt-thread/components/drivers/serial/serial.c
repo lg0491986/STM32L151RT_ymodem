@@ -978,6 +978,14 @@ static rt_err_t rt_serial_control(struct rt_device *dev,
                     serial->ops->configure(serial, (struct serial_configure *) args);
                 }
             }
+            else
+            {
+                if (serial->parent.ref_count)
+                {
+                    /* serial device has been opened, to configure it */
+                    serial->ops->configure(serial, &serial->config);
+                }
+            }
 
             break;
 

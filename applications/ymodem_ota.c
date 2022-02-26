@@ -53,7 +53,7 @@ static struct firmware_patition app_part = {
         .erase = stm32_flash_erase
 };
 
-#define YMODEM_DEV_NAME "uart3"
+#define YMODEM_DEV_NAME "uart5"
 static rt_device_t ymodem_dev;
 
 rt_device_t get_ymodem_dev()

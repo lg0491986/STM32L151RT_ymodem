@@ -94,7 +94,7 @@
 
 /* POSIX layer and C standard library */
 
-#define RT_LIBC_USING_TIME
+#define RT_USING_LIBC
 /* end of POSIX layer and C standard library */
 
 /* Network */
@@ -173,6 +173,17 @@
 
 /* multimedia packages */
 
+/* LVGL: powerful and easy-to-use embedded GUI library */
+
+/* end of LVGL: powerful and easy-to-use embedded GUI library */
+
+/* u8g2: a monochrome graphic library */
+
+/* end of u8g2: a monochrome graphic library */
+
+/* PainterEngine: A cross-platform graphics application framework written in C language */
+
+/* end of PainterEngine: A cross-platform graphics application framework written in C language */
 /* end of multimedia packages */
 
 /* tools packages */
@@ -181,18 +192,44 @@
 
 /* system packages */
 
+/* enhanced kernel services */
+
+/* end of enhanced kernel services */
+
+/* POSIX extension functions */
+
+/* end of POSIX extension functions */
+
+/* acceleration: Assembly language or algorithmic acceleration packages */
+
+/* end of acceleration: Assembly language or algorithmic acceleration packages */
+
+/* CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
+
+/* end of CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
+
+/* Micrium: Micrium software products porting for RT-Thread */
+
+/* end of Micrium: Micrium software products porting for RT-Thread */
 /* end of system packages */
 
 /* peripheral libraries and drivers */
 
 /* end of peripheral libraries and drivers */
 
-/* miscellaneous packages */
+/* AI packages */
 
+/* end of AI packages */
+
+/* miscellaneous packages */
 
 /* samples: kernel and components samples */
 
 /* end of samples: kernel and components samples */
+
+/* entertainment: terminal games and other interesting software packages */
+
+/* end of entertainment: terminal games and other interesting software packages */
 /* end of miscellaneous packages */
 /* end of RT-Thread online packages */
 

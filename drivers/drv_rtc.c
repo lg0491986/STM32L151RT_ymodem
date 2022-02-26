@@ -39,7 +39,7 @@ static RTC_HandleTypeDef RTC_Handler;
 void rtc_wkup_enable(uint32_t seconds)
 {
     uint32_t wakeup_clock,time;
-    HAL_RTCEx_DeactivateWakeUpTimer(&RTC_Handler);
+
     if(seconds == 0 || seconds>131071)
         return;
     if(0<seconds && seconds<=65535){
@@ -50,6 +50,7 @@ void rtc_wkup_enable(uint32_t seconds)
         time = seconds;
         wakeup_clock = RTC_WAKEUPCLOCK_CK_SPRE_17BITS;
     }
+    HAL_RTCEx_DeactivateWakeUpTimer(&RTC_Handler);
     HAL_RTCEx_SetWakeUpTimer_IT(&RTC_Handler, time, wakeup_clock);
 }
 
@@ -246,7 +247,7 @@ static rt_err_t rt_hw_rtc_register(rt_device_t device, const char *name, rt_uint
 {
     RT_ASSERT(device != RT_NULL);
 
-//    rt_rtc_init();
+    rt_rtc_init();
     if (rt_rtc_config(device) != RT_EOK)
     {
         return -RT_ERROR;
